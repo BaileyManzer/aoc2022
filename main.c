@@ -57,6 +57,9 @@ uint32_t solution_day_1_p2(const char *filename) {
       single_elf_total = 0;
     }
   }
+  if (0 != fclose(input)) {
+    return -1;
+  }
   return highest_elf_total + second_highest_elf_total + third_highest_elf_total;
 }
 
@@ -83,6 +86,9 @@ uint32_t solution_day_1(const char *filename) {
       }
       single_elf_total = 0;
     }
+  }
+  if (0 != fclose(input)) {
+    return -1;
   }
   return highest_elf_total;
 }
