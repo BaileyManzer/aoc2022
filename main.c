@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
+#include <stdbool.h>
 
 #define MAX_CHARS_TO_READ 50
 #define BASE_10 10
@@ -11,7 +12,11 @@
 #define POINTS_FOR_SCISSORS 3
 #define POINTS_FOR_WINNING_RPS 6
 #define POINTS_FOR_DRAWING_RPS 3
+#define DIFFERENCE_BETWEEN_ASCII_A_AND_DECIMAL_27 38
+#define DIFFERENCE_BETWEEN_ASCII_LOWER_A_AND_DECIMAL_1 96
 
+uint32_t solution_day_3_p2(const char *filename);
+uint32_t solution_day_3(const char *filename);
 uint32_t solution_day_2_p2(const char *filename);
 uint32_t solution_day_2(const char *filename);
 uint32_t solution_day_1_p2(const char *filename);
@@ -22,8 +27,109 @@ int main() {
   printf("Day 1 problem 2 solution: %lu \n", (unsigned long)solution_day_1_p2("inputs/day1input.txt"));
   printf("Day 2 problem 1 solution: %lu \n", (unsigned long)solution_day_2("inputs/day2input.txt"));
   printf("Day 2 problem 2 solution: %lu \n", (unsigned long)solution_day_2_p2("inputs/day2input.txt"));
+  printf("Day 3 problem 1 solution: %lu \n", (unsigned long)solution_day_3("inputs/day3input.txt"));
+  printf("Day 3 problem 2 solution: %lu \n", (unsigned long)solution_day_3_p2("inputs/day3input.txt"));
 
   return 0;
+}
+
+uint32_t solution_day_3_p2(const char *filename) {
+  FILE *input = fopen(filename, "r");
+  if (!input) {
+    return -1;
+  }
+  char rucksack_items[MAX_CHARS_TO_READ] = {0};
+  uint32_t priority_total = 0;
+  uint32_t lines_checked = 0;
+  char lookup_table[53] = {0};
+
+  while(NULL != fgets(rucksack_items, sizeof(rucksack_items), input)) {
+    lines_checked++;
+    char *iterator = rucksack_items;
+    uint32_t converted_value = 0;
+    bool keep_iterating = true;
+
+    // fgets will keep '\n' character in string it grabs
+    /*
+    while (*iterator != '\0' && keep_iterating) {
+      if (*iterator == '\n') {
+        iterator++;
+        continue;
+      } else if (*iterator >= 'A' && *iterator <= 'Z') {
+        converted_value = *iterator - DIFFERENCE_BETWEEN_ASCII_A_AND_DECIMAL_27;
+    */
+    while (*iterator != '\n' && keep_iterating) {
+      if (*iterator >= 'A' && *iterator <= 'Z') {
+        converted_value = *iterator - DIFFERENCE_BETWEEN_ASCII_A_AND_DECIMAL_27;
+      } else {
+        converted_value = *iterator - DIFFERENCE_BETWEEN_ASCII_LOWER_A_AND_DECIMAL_1;
+      }
+
+      if (((lines_checked % 3 == 1) && lookup_table[converted_value] == 0) ||
+           ((lines_checked % 3 == 2) && lookup_table[converted_value] == 1)) {
+        lookup_table[converted_value] += 1;
+      }
+      if ((lines_checked % 3 == 0) && lookup_table[converted_value] == 2) {
+        priority_total += converted_value;
+        memset(lookup_table, 0, sizeof(lookup_table));
+        keep_iterating = false;
+        break;
+      }
+      iterator++;
+    }
+  }
+
+  if (0 != fclose(input)) {
+    return -1;
+  }
+
+  return priority_total;
+}
+
+uint32_t solution_day_3(const char *filename) {
+  FILE *input = fopen(filename, "r");
+  if (!input) {
+    return -1;
+  }
+
+  char rucksack_items[MAX_CHARS_TO_READ] = {0};
+  uint32_t priority_total = 0;
+  while(NULL != fgets(rucksack_items, sizeof(rucksack_items), input)) {
+    char lookup_table[53] = {0};
+
+    for (uint32_t i = 0; i < strlen(rucksack_items)/2; i++) {
+      uint32_t converted_value = 0;
+      if (rucksack_items[i] >= 'A' && rucksack_items[i] <= 'Z') {
+        converted_value = rucksack_items[i] - DIFFERENCE_BETWEEN_ASCII_A_AND_DECIMAL_27;
+      } else {
+        converted_value = rucksack_items[i] - DIFFERENCE_BETWEEN_ASCII_LOWER_A_AND_DECIMAL_1;
+      }
+      lookup_table[converted_value] += 1;
+    }
+
+    char *iterator = &rucksack_items[strlen(rucksack_items)/2];
+    bool keep_iterating = true;
+
+    while (*iterator != 0 && keep_iterating == true) {
+      uint32_t converted_value = 0;
+      if (*iterator >= 'A' && *iterator <= 'Z') {
+        converted_value = *iterator - DIFFERENCE_BETWEEN_ASCII_A_AND_DECIMAL_27;
+      } else {
+        converted_value = *iterator - DIFFERENCE_BETWEEN_ASCII_LOWER_A_AND_DECIMAL_1;
+      }
+      iterator++;
+      if (lookup_table[converted_value] != 0) {
+        priority_total += converted_value;
+        keep_iterating = false;
+        memset(lookup_table, 0, sizeof(lookup_table));
+      }
+    }
+  }
+
+  if (0 != fclose(input)) {
+    return -1;
+  }
+  return priority_total;
 }
 
 uint32_t solution_day_2_p2(const char *filename) {
